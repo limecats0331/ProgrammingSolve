@@ -18,10 +18,11 @@ func main() {
 	bw := bufio.NewWriter(os.Stdout)
 
 	fmt.Fscanln(br, &W, &H)
-	arr := make([][]int64, H)
-	for i := 0; i < H; i++ {
-		arr[i] = make([]int64, W)
-	}
+	// arr := make([][]int64, H)
+	// for i := 0; i < H; i++ {
+	// 	arr[i] = make([]int64, W)
+	// }
+	var arr [1001][1001]int64
 
 	que := make([][]int, 0)
 
@@ -37,7 +38,7 @@ func main() {
 		}
 	}
 
-	result := bfs(que, arr)
+	result, arr := bfs(que, arr)
 
 	if !allClear(arr) {
 		result = -1
@@ -46,10 +47,11 @@ func main() {
 	bw.Flush()
 }
 
-func allClear(arr [][]int64) bool {
+func allClear(arr [1001][1001]int64) bool {
 	for i := 0; i < H; i++ {
 		for j := 0; j < W; j++ {
 			if arr[i][j] == 0 {
+				// fmt.Printf("%d %d \n", i, j)
 				return false
 			}
 		}
@@ -57,7 +59,7 @@ func allClear(arr [][]int64) bool {
 	return true
 }
 
-func bfs(que [][]int, arr [][]int64) int {
+func bfs(que [][]int, arr [1001][1001]int64) (int, [1001][1001]int64) {
 	// que := [][]int{start}
 	var max int = 0
 	for len(que) != 0 {
@@ -73,14 +75,11 @@ func bfs(que [][]int, arr [][]int64) int {
 			if ny < 0 || ny >= H || nx < 0 || nx >= W {
 				continue
 			}
-			if arr[ny][nx] == -1 {
-				continue
-			}
 			if arr[ny][nx] == 0 {
 				que = append(que, []int{ny, nx, now[2] + 1})
 				arr[ny][nx] = 1
 			}
 		}
 	}
-	return max
+	return max, arr
 }
