@@ -10,7 +10,6 @@ import (
 
 var H int
 var W int
-var arr [][]int64
 var dy = []int{-1, 0, 1, 0}
 var dx = []int{0, 1, 0, -1}
 
@@ -19,7 +18,7 @@ func main() {
 	bw := bufio.NewWriter(os.Stdout)
 
 	fmt.Fscanln(br, &W, &H)
-	arr = make([][]int64, H)
+	arr := make([][]int64, H)
 	for i := 0; i < H; i++ {
 		arr[i] = make([]int64, W)
 	}
@@ -38,16 +37,16 @@ func main() {
 		}
 	}
 
-	result := bfs(que)
-	if !allClear() {
+	result := bfs(que, arr)
+
+	if !allClear(arr) {
 		result = -1
 	}
-	// fmt.Fprintln(bw, result)
 	bw.WriteString(strconv.Itoa(result))
 	bw.Flush()
 }
 
-func allClear() bool {
+func allClear(arr [][]int64) bool {
 	for i := 0; i < H; i++ {
 		for j := 0; j < W; j++ {
 			if arr[i][j] == 0 {
@@ -58,7 +57,7 @@ func allClear() bool {
 	return true
 }
 
-func bfs(que [][]int) int {
+func bfs(que [][]int, arr [][]int64) int {
 	// que := [][]int{start}
 	var max int = 0
 	for len(que) != 0 {
