@@ -2,56 +2,82 @@ package main
 
 import (
 	"bufio"
-	"fmt"
 	"os"
 	"strconv"
-	"strings"
 )
 
-var H int
-var W int
-var dy = []int{-1, 0, 1, 0}
-var dx = []int{0, 1, 0, -1}
+var (
+	sc     *bufio.Scanner
+	wr     *bufio.Writer
+	N, M   int
+	arr    [1000][1000]int
+	cnt    int
+	dx, dy [4]int
+	q      []status
+)
+
+type status struct {
+	index
+	day int
+}
+
+type index struct {
+	x, y int
+}
+
+func init() {
+	sc = bufio.NewScanner(os.Stdin)
+	sc.Split(bufio.ScanWords)
+	wr = bufio.NewWriter(os.Stdout)
+	dx = [4]int{0, 0, 1, -1}
+	dy = [4]int{1, -1, 0, 0}
+}
 
 func main() {
-	br := bufio.NewReader(os.Stdin)
-	bw := bufio.NewWriter(os.Stdout)
-
-	fmt.Fscanln(br, &W, &H)
-	// arr := make([][]int64, H)
-	// for i := 0; i < H; i++ {
-	// 	arr[i] = make([]int64, W)
-	// }
-	var arr [1001][1001]int64
-
-	que := make([][]int, 0)
-
-	for i := 0; i < H; i++ {
-		input, _, _ := br.ReadLine()
-		line := strings.Split(strings.Trim(string(input), "\r\n"), " ")
-		for j := 0; j < W; j++ {
-			num, _ := strconv.ParseInt(line[j], 0, 64)
-			arr[i][j] = num
+	defer wr.Flush()
+	M = scanInt()
+	N = scanInt()
+	q = make([]status, 0, M*N)
+	for i := 0; i < N; i++ {
+		for j := 0; j < M; j++ {
+			arr[i][j] = scanInt()
 			if arr[i][j] == 1 {
-				que = append(que, []int{i, j, 0})
+				q = append(q, status{index{i, j}, 0})
 			}
 		}
 	}
-
-	result, arr := bfs(que, arr)
-
-	if !allClear(arr) {
-		result = -1
+	bfs()
+	if check() {
+		wr.WriteString(strconv.Itoa(cnt))
+	} else {
+		wr.WriteString("-1")
 	}
-	bw.WriteString(strconv.Itoa(result))
-	bw.Flush()
 }
 
-func allClear(arr [1001][1001]int64) bool {
-	for i := 0; i < H; i++ {
-		for j := 0; j < W; j++ {
+func bfs() {
+	for len(q) != 0 {
+		in := q[0]
+		q = q[1:]
+		x := in.x
+		y := in.y
+		if in.day > cnt {
+			cnt = in.day
+		}
+		for i := 0; i < 4; i++ {
+			newX := x + dx[i]
+			newY := y + dy[i]
+			if newX >= 0 && newX < N && newY >= 0 && newY < M && arr[newX][newY] == 0 {
+				arr[newX][newY] = 1
+				q = append(q, status{index{newX, newY}, in.day + 1})
+			}
+		}
+	}
+}
+
+func check() bool {
+	for i := 0; i < N; i++ {
+		for j := 0; j < M; j++ {
 			if arr[i][j] == 0 {
-				// fmt.Printf("%d %d \n", i, j)
 				return false
 			}
 		}
@@ -59,27 +85,8 @@ func allClear(arr [1001][1001]int64) bool {
 	return true
 }
 
-func bfs(que [][]int, arr [1001][1001]int64) (int, [1001][1001]int64) {
-	// que := [][]int{start}
-	var max int = 0
-	for len(que) != 0 {
-		now := que[0]
-		que = que[1:]
-
-		max = now[2]
-
-		for i := 0; i < 4; i++ {
-			ny := now[0] + dy[i]
-			nx := now[1] + dx[i]
-
-			if ny < 0 || ny >= H || nx < 0 || nx >= W {
-				continue
-			}
-			if arr[ny][nx] == 0 {
-				que = append(que, []int{ny, nx, now[2] + 1})
-				arr[ny][nx] = 1
-			}
-		}
-	}
-	return max, arr
+func scanInt() (n int) {
+	sc.Scan()
+	n, _ = strconv.Atoi(sc.Text())
+	return
 }
