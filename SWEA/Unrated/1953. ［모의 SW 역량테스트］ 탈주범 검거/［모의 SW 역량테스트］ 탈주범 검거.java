@@ -1,17 +1,18 @@
 import java.io.BufferedReader;
 import java.io.FileInputStream;
+import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.ArrayDeque;
-import java.util.Arrays;
-import java.util.Queue;
+import java.util.*;
 
 public class Solution {
-    static Pipe[][] board;
-    static int N;
-    static int M;
+    static int H;
+    static int W;
+    static int L;
+    static Pipe[][] map;
+    static boolean[][] isVisit;
+    //상우하좌
     static int[] dy = {-1, 0, 1, 0};
     static int[] dx = {0, 1, 0, -1};
-    static boolean[][] isVisit;
 
     public static void main(String[] args) throws Exception {
         //System.setIn(new FileInputStream("input.txt"));
@@ -19,68 +20,59 @@ public class Solution {
 
         int T = Integer.parseInt(br.readLine().trim());
         for (int t = 1; t <= T; t++) {
-            String[] info = br.readLine().trim().split(" ");
-            N = Integer.parseInt(info[0]);
-            M = Integer.parseInt(info[1]);
-            int R = Integer.parseInt(info[2]);
-            int C = Integer.parseInt(info[3]);
-            int L = Integer.parseInt(info[4]);
+            String[] input = br.readLine().trim().split(" ");
+            H = Integer.parseInt(input[0]);
+            W = Integer.parseInt(input[1]);
+            int R = Integer.parseInt(input[2]);
+            int C = Integer.parseInt(input[3]);
+            L = Integer.parseInt(input[4]);
 
+            map = new Pipe[H][W];
 
-            board = new Pipe[N][M];
-            isVisit = new boolean[N][M];
-
-            for (int i = 0; i < N; i++) {
-                String[] line = br.readLine().trim().split(" ");
-                for (int j = 0; j < M; j++) {
-                    int type = Integer.parseInt(line[j]);
-
-                    board[i][j] = type == 0 ? null : new Pipe(type);
+            for (int i = 0; i < H; i++) {
+                int[] line = Arrays.stream(br.readLine().trim().split(" ")).mapToInt(Integer::parseInt).toArray();
+                for (int j = 0; j < W; j++) {
+                    if (line[j] != 0) {
+                        map[i][j] = new Pipe(line[j]);
+                    }
                 }
             }
 
-            if (L == 1) {
-                System.out.printf("#%d %d\n", t, 1);
-                continue;
-            }
-            
-            bfs(R, C, L);
-
-            int cnt = 0;
-            for (int i = 0; i < N; i++) {
-                for (int j = 0; j < M; j++) {
-                    if (isVisit[i][j]) cnt += 1;
-                }
-            }
-            System.out.printf("#%d %d\n", t, cnt);
+            isVisit = new boolean[H][W];
+            bfs(R, C);
+            System.out.printf("#%d %d\n", t, getResult());
         }
     }
 
-    static void bfs(int R, int C, int L) {
-//        System.out.printf("R : %d, C : %d, L : %d\n", R, C, L);
-        Queue<int[]> que = new ArrayDeque<>();
-        que.add(new int[]{R, C, 1});
+    static int getResult() {
+        int result = 0;
+        for (int i = 0; i < H; i++) {
+            for (int j = 0; j < W; j++) {
+                if (isVisit[i][j]) result++;
+            }
+        }
+        return result;
+    }
 
-        while (!que.isEmpty()) {
-            int[] now = que.poll();
-//            System.out.println(Arrays.toString(now));
-            int y = now[0];
-            int x = now[1];
-            int cnt = now[2];
-            if (cnt == L) break;
+    static void bfs(int y, int x) {
+        isVisit[y][x] = true;
+        Queue<int[]> queue = new ArrayDeque<>();
+        queue.add(new int[]{y, x, 1});
+
+        while (!queue.isEmpty()) {
+            int[] now = queue.poll();
+            if (now[2] == L) break;
 
             for (int i = 0; i < 4; i++) {
-                if (!board[y][x].open[i]) continue;
-                int ny = y + dy[i];
-                int nx = x + dx[i];
-//                System.out.printf("ny = %d, nx = %d\n", ny, nx);
+                if(!map[now[0]][now[1]].connected[i]) continue;
+                int ny = now[0] + dy[i];
+                int nx = now[1] + dx[i];
 
-                if (ny < 0 || ny >= N || nx < 0 || nx >= M) continue;
-                if (board[ny][nx] == null) continue;
+                if (ny < 0 || ny >= H || nx < 0 || nx >= W) continue;
+                if (map[ny][nx] == null) continue;
 
-                if (board[ny][nx].isConnect(i) && !isVisit[ny][nx]) {
-//                    System.out.println("connect");
-                    que.add(new int[]{ny, nx, cnt + 1});
+                if (!isVisit[ny][nx] && map[ny][nx].isConnect(i)) {
+                    queue.add(new int[]{ny, nx, now[2] + 1});
                     isVisit[ny][nx] = true;
                 }
             }
@@ -89,39 +81,24 @@ public class Solution {
 
     static class Pipe {
         int type;
-        //상우하좌
-        boolean[] open;
+        boolean[] connected;
+        Map<Integer, boolean[]> pipeType = new HashMap<Integer, boolean[]>() {{
+            put(1, new boolean[]{true, true, true, true});
+            put(2, new boolean[]{true, false, true, false});
+            put(3, new boolean[]{false, true, false, true});
+            put(4, new boolean[]{true, true, false, false});
+            put(5, new boolean[]{false, true, true, false});
+            put(6, new boolean[]{false, false, true, true});
+            put(7, new boolean[]{true, false, false, true});
+        }};
 
         public Pipe(int type) {
             this.type = type;
-            switch (type) {
-                case 1:
-                    open = new boolean[]{true, true, true, true};
-                    break;
-                case 2:
-                    open = new boolean[]{true, false, true, false};
-                    break;
-                case 3:
-                    open = new boolean[]{false, true, false, true};
-                    break;
-                case 4:
-                    open = new boolean[]{true, true, false, false};
-                    break;
-                case 5:
-                    open = new boolean[]{false, true, true, false};
-                    break;
-                case 6:
-                    open = new boolean[]{false, false, true, true};
-                    break;
-                case 7:
-                    open = new boolean[]{true, false, false, true};
-                    break;
-            }
+            this.connected = pipeType.get(type);
         }
 
-        boolean isConnect(int location) {
-            int opposite = (location + 2) % 4;
-            return this.open[opposite];
+        public boolean isConnect(int dir) {
+            return connected[(dir + 2) % 4];
         }
     }
 }
