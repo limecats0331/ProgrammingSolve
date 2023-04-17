@@ -10,21 +10,17 @@ int index_a, index_b;
 int pick_small() {
     int out = 0;
     if (index_a == N) {
-        out = arr_b[index_b];
-        index_b++;
+        out = arr_b[index_b++];
         return out;
     }
     if (index_b == M) {
-        out = arr_a[index_a];
-        index_a++;
+        out = arr_a[index_a++];
         return out;
     }
     if (arr_a[index_a] < arr_b[index_b]) {
-        out = arr_a[index_a];
-        index_a++;
+        out = arr_a[index_a++];
     } else {
-        out = arr_b[index_b];
-        index_b++;
+        out = arr_b[index_b++];
     }
     return out;
 }
@@ -46,8 +42,6 @@ int main() {
     }
 
     //merge
-    index_a = 0;
-    index_b = 0;
     vector<int> result;
     for (int i = 0; i < N + M; ++i) {
         result.push_back(pick_small());
