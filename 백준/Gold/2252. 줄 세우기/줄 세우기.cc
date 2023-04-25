@@ -4,7 +4,6 @@ using namespace std;
 
 int N, M;
 int conn[32001];
-bool is_left[32001];
 vector<vector<int>> students;
 
 
@@ -24,19 +23,26 @@ int main() {
         conn[b]++;
     }
 
-    int cnt = 0;
-    while (cnt != N) {
-        for (int i = 1; i <= N; ++i) {
-            if (!is_left[i] && conn[i] == 0) {
-                cout << i << " ";
-                cnt++;
-                is_left[i] = true;
-                for (int st: students[i]) {
-                    conn[st]--;
-                }
+    queue<int> st;
+    for (int i = 1; i <= N; ++i) {
+        if(conn[i] == 0){
+            st.push(i);
+        }
+    }
+
+    while(!st.empty()){
+        int now = st.front();
+        cout << now << " ";
+        st.pop();
+
+        for(int student : students[now]){
+            conn[student]--;
+            if(conn[student] == 0){
+                st.push(student);
             }
         }
     }
+
 
     return 0;
 }
